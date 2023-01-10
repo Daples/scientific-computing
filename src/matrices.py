@@ -1,105 +1,41 @@
 import numpy as np
-from typing import Callable
+import scipy.sparse.linalg as sla
+from tqdm import tqdm
 
-from scipy.sparse import diags
-import matplotlib.pyplot as plt
+from poisson.two_dimensional import two_dimensional_poisson, get_f_2D, get_exact_2D
+from poisson.three_dimensional import three_dimensional_poisson, get_f_3D, get_exact_3D
 
+Ns_2D = 2 ** np.arange(2, 6)
+Ns_3D = 2 ** np.arange(2, 4)
 
-def one_dimensional_poisson(n: int) -> np.ndarray:
-    """"""
+# DIRECT SOLVERS
 
-    h = 1 / n
-    poisson_matrix = np.zeros((n + 1, n + 1))
-    inner_poisson_matrix = get_inner_poisson_1D(n - 1)
-    poisson_matrix[1:-1, 1:-1] = inner_poisson_matrix
-    poisson_matrix[0, 0] = h**2
-    poisson_matrix[-1, -1] = h**2
+norms_2D = []
+for N in tqdm(Ns_2D):
+    # Get matrices
+    A = two_dimensional_poisson(N)
+    f = get_f_2D(N)
 
-    return poisson_matrix
+    # Solve system
+    u = sla.spsolve(A, f)
 
+    # Get results
+    u_exact = get_exact_2D(N)
+    norms_2D.append(np.linalg.norm(u - u_exact, ord=np.inf))
 
-def get_inner_poisson_1D(n_inner: int) -> np.ndarray:
-    """"""
+print(norms_2D)
 
-    diagonals = [
-        2 * np.ones(n_inner),
-        -1 * np.ones(n_inner - 1),
-        -1 * np.ones(n_inner - 1),
-    ]
-    inner_poisson_matrix = diags(diagonals, [0, -1, 1]).toarray()  # type: ignore
+# norms_3D = []
+# for N in tqdm(Ns_3D):
+#     # Get matrices
+#     A = three_dimensional_poisson(N)
+#     f = get_f_3D(N)
 
-    return inner_poisson_matrix
+#     # Solve system
+#     u = sla.spsolve(A, f)
 
+#     # Get results
+#     u_exact = get_exact_3D(N)
+#     norms_3D.append(np.linalg.norm(u - u_exact, ord=np.inf))
 
-def get_inner_poisson_2D(n_inner: int) -> np.ndarray:
-    """"""
-
-    aux_1D = get_inner_poisson_1D(n_inner)
-    I = np.identity(n_inner)
-    inner_poisson_matrix = np.kron(aux_1D, I) + np.kron(I, aux_1D)
-
-    return inner_poisson_matrix
-
-
-def three_dimensional_poisson(n: int) -> np.ndarray:
-    """"""
-
-    h = 1 / n
-    poisson_matrix = np.identity((n + 1) ** 3) * h**2
-    inner_poisson_matrix = get_inner_poisson_3D(n - 1)
-    poisson_matrix[n:-n, n:-n] = inner_poisson_matrix
-
-    return poisson_matrix
-
-
-def get_inner_poisson_3D(n_inner: int) -> np.ndarray:
-    """"""
-
-    aux_2D = get_inner_poisson_2D(n_inner)
-    I = np.identity(n_inner)
-    inner_poisson_matrix = np.kron(aux_2D, I) + np.kron(I, aux_2D)
-
-    return inner_poisson_matrix
-
-
-def get_f(n: int, f: Callable) -> np.ndarray:
-    """"""
-
-    space_domain = np.zeros((n + 1, n + 1, n + 1))
-    domain = np.linspace(0, 1, n + 1, endpoint=True)
-    inner_domain = domain[1:-1]
-
-    xx, yy, zz = np.meshgrid(domain, domain, domain, sparse=True)
-    x_inner, y_inner, z_inner = np.meshgrid(
-        inner_domain, inner_domain, inner_domain, sparse=True
-    )
-    inner_f = f(x_inner, y_inner, z_inner)
-
-    space_domain[1:-1, 1:-1, 1:-1] = inner_f
-    space_domain[:, :, -1] = np.squeeze(np.sin(xx * yy))
-    space_domain[:, -1, :] = np.squeeze(np.sin(xx * zz))
-    space_domain[-1, :, :] = np.squeeze(np.sin(yy * zz))
-
-    return np.ravel(space_domain, order="C")
-
-
-def solve_direct(n: int, f: Callable) -> np.ndarray:
-    """"""
-
-    A = three_dimensional_poisson(n)
-    rhs = get_f(n, f)
-
-    return np.linalg.solve(A, rhs)
-
-
-f_3D = lambda x, y, z: (x**2 * z**2 + z**2 * y**2 + y**2 * x**2) * np.sin(
-    x * y * z
-)
-print(solve_direct(4, f_3D))
-
-# mat = get_inner_poisson_3D(5)
-# print(mat.shape)
-# # mat = np.linalg.inv(mat)
-# plt.imshow(mat, interpolation="nearest")
-# plt.colorbar()
-# plt.show()
+# print(norms_3D)
