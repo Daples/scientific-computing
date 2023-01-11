@@ -1,6 +1,7 @@
 from _typing import sparray
 
 import scipy.sparse as sp
+import scipy.sparse.linalg as sla
 
 import numpy as np
 
@@ -65,3 +66,26 @@ def fill_block_matrix(
             matrix[idx[0] : idx[1], shifted_idx[0] : shifted_idx[1]] = block
 
     return matrix
+
+
+def get_M_SSOR(A: sparray, omega: float) -> sparray:
+    """It returns the matrix M for BIM with SSOR.
+
+    Parameters
+    ----------
+    A: _typing.sparray
+        The symmetric matrix.
+
+    Returns
+    -------
+    _typing.sparray
+        The SSOR matrix.
+    """
+
+    D = sp.diags(A.diagonal(), format="lil")
+    U = sp.triu(A, format="lil")
+    L = sp.tril(A, format="lil")
+
+    aux = 1 / omega * D + L
+    M = omega / (2 - omega) @ aux * sla.inv(D) @ aux.T
+    return M
