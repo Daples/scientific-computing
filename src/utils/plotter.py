@@ -31,7 +31,7 @@ class Plotter:
     plt.rcParams.update({"font.size": 18})
 
     @classmethod
-    def _add_folder(cls, path: str) -> str:
+    def add_folder(cls, path: str) -> str:
         """It adds the default folder to the input path.
 
         Parameters
@@ -70,4 +70,4 @@ class Plotter:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.grid()
-        plt.savefig(cls._add_folder(path), bbox_inches="tight")
+        plt.savefig(cls.add_folder(path), bbox_inches="tight")

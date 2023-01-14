@@ -28,7 +28,9 @@ def solve_ssor(
 
     def is_finished(residual: np.ndarray) -> bool:
         norm = lambda x: np.linalg.norm(x, ord=2)
-        return cast(bool, norm(residual) / norm(f) <= tol)
+        val = norm(residual) / norm(f)
+        print(val)
+        return cast(bool, val <= tol)
 
     def get_from_iteration(xk: np.ndarray) -> None:
         # Update iteration
@@ -63,7 +65,6 @@ def solve_ssor(
         residual = b - A @ xnew
         xold = xnew
         get_from_iteration(xnew)
-        print(results.residuals[-1])
 
     results.solution = xold
     return results
@@ -75,6 +76,7 @@ def solve_ssor_sparse(
     u_true: np.ndarray,
     omega: float,
     tol: float = 1e-10,
+    verbose: bool = False,
 ) -> IterativeResults:
     """"""
 
@@ -89,7 +91,10 @@ def solve_ssor_sparse(
 
     def is_finished(residual: sparray) -> bool:
         norm = lambda x: np.linalg.norm(x, ord=2)
-        return cast(bool, norm(residual) / norm(f) <= tol)
+        val = norm(residual) / norm(f)
+        if verbose:
+            print(val)
+        return cast(bool, val <= tol)
 
     def get_from_iteration(xk: sparray) -> None:
         # Update iteration
@@ -126,4 +131,5 @@ def solve_ssor_sparse(
         get_from_iteration(xnew)
 
     results.solution = xold
+    results.time = time() - results.time
     return results

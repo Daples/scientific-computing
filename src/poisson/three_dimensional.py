@@ -143,7 +143,7 @@ def _inner_no_boundary(n: int) -> sparray:
     return sparray(t1 + t2 + t3)
 
 
-def get_f_3D(n: int) -> np.ndarray:
+def get_f_3D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """"""
 
     h = 1 / n
@@ -170,14 +170,14 @@ def get_f_3D(n: int) -> np.ndarray:
     space_domain[1:-1, 1:-1, 1] += space_domain[1:-1, 1:-1, 0] / h**2
     space_domain[1:-1, 1:-1, -2] += space_domain[1:-1, 1:-1, -1] / h**2
 
-    return np.ravel(space_domain, order="C")
+    return np.ravel(space_domain, order="C"), xx, yy, zz
 
 
 def f_3D(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> np.ndarray:
     return (x**2 * z**2 + z**2 * y**2 + y**2 * x**2) * np.sin(x * y * z)
 
 
-def get_exact_3D(n: int) -> np.ndarray:
+def get_exact_3D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     domain = np.linspace(0, 1, n + 1, endpoint=True)
     xx, yy, zz = np.meshgrid(domain, domain, domain, sparse=True)
-    return np.ravel(np.sin(np.multiply(xx, np.multiply(yy, zz))), order="C")
+    return np.ravel(np.sin(np.multiply(xx, np.multiply(yy, zz))), order="C"), xx, yy, zz
