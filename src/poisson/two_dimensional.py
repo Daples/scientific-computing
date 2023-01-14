@@ -2,8 +2,8 @@ from typing import cast
 
 import numpy as np
 import scipy.sparse as sp
-from _typing import sparray
 
+from _typing import sparray
 from poisson.one_dimensional import get_inner_poisson_1D
 from utils import fill_block_matrix
 
@@ -69,7 +69,7 @@ def _inner_no_boundary(n: int) -> sparray:
     )
 
 
-def get_f_2D(n: int) -> np.ndarray:
+def get_f_2D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """"""
 
     h = 1 / n
@@ -91,14 +91,14 @@ def get_f_2D(n: int) -> np.ndarray:
     space_domain[1:-1, 1] += space_domain[1:-1, 0] / h**2
     space_domain[1:-1, -2] += space_domain[1:-1, -1] / h**2
 
-    return np.ravel(space_domain, order="C")
+    return np.ravel(space_domain, order="C"), xx, yy
 
 
 def f_2D(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return (x**2 + y**2) * np.sin(x * y)
 
 
-def get_exact_2D(n: int) -> np.ndarray:
+def get_exact_2D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     domain = np.linspace(0, 1, n + 1, endpoint=True)
     xx, yy = np.meshgrid(domain, domain, sparse=True)
-    return np.ravel(np.sin(np.multiply(xx, yy)), order="C")
+    return np.ravel(np.sin(np.multiply(xx, yy)), order="C"), xx, yy

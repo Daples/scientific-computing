@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
-from _typing import sparray
 
+from _typing import sparray
 from poisson.one_dimensional import get_inner_poisson_1D
 from utils import fill_block_matrix
 

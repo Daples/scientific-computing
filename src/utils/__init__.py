@@ -1,9 +1,15 @@
-from _typing import sparray
+import inspect
+from time import time
+from typing import cast
 
+import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as sla
 
-import numpy as np
+from _typing import sparray
+from utils.result import IterativeResults
+
+_tolerance: float = 1e-10
 
 
 def fill_block_matrix(
@@ -83,9 +89,57 @@ def get_M_SSOR(A: sparray, omega: float) -> sparray:
     """
 
     D = sp.diags(A.diagonal(), format="lil")
-    U = sp.triu(A, format="lil")
     L = sp.tril(A, format="lil")
 
     aux = 1 / omega * D + L
-    M = omega / (2 - omega) @ aux * sla.inv(D) @ aux.T
+    M = omega / (2 - omega) * aux @ sla.inv(D) @ aux.T
     return M
+
+
+def solve_cg(
+    A: sparray,
+    f: np.ndarray,
+    u_true: np.ndarray,
+    u0: np.ndarray | None = None,
+    M: sparray | np.ndarray | None = None,
+) -> IterativeResults:
+    """It uses sparse Conjugate Gradient to solve `Au = f`.
+
+    Parameters
+    ----------
+    A: _typing.sparray
+        The sparse matrix A.
+    f: numpy.ndarray
+        The right hand side of the equation.
+    u0: numpy.ndarray | None, optional
+        The initial guess vector. Default: None.
+    M: _typing.sparray | numpy.ndarray | None, optional
+        The precondition matrix.
+    """
+
+    residuals = []
+    true_residuals = []
+    t0 = time()
+    iterations = 0
+    exit_code = -1
+    if u0 is None:
+        u0 = np.empty(A.shape[0])
+    results = IterativeResults(u0, residuals, true_residuals, t0, iterations, exit_code)
+
+    def get_from_iteration(xk) -> None:
+        # Update iteration
+        results.iterations += 1
+
+        # Store estimated residual
+        frame = inspect.currentframe().f_back  # type: ignore
+        results.residuals.append(frame.f_locals["resid"])  # type: ignore
+
+        # Store true residual
+        results.errors.append(cast(float, np.linalg.norm(xk - u_true)))
+
+    u, info = sla.cg(A, f, tol=_tolerance, x0=u0, M=M, callback=get_from_iteration)
+    results.time = time() - results.time
+    results.solution = u
+    results.exit_code = info
+
+    return results
