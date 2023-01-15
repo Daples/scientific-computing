@@ -23,10 +23,12 @@ def fill_block_matrix(
         The number of elements in the discretization on each dimension.
     no_boundary_matrix: numpy.ndarray
         The matrix with elimination of boundary conditions.
+    fill_subblocks: bool, optional
+        If auxiliary blocks should be filled. Default: True
 
     Returns
     -------
-    numpy.ndarray
+    _typing.sparray
         The filled matrix with boundary conditions.
     """
 
@@ -115,6 +117,11 @@ def solve_cg(
         The initial guess vector. Default: None.
     M: _typing.sparray | numpy.ndarray | None, optional
         The precondition matrix.
+
+    Returns
+    -------
+    utils.result.IterativeResults
+        The results object.
     """
 
     residuals = []

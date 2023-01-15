@@ -7,7 +7,18 @@ from utils import fill_block_matrix
 
 
 def three_dimensional_poisson(n: int) -> sparray:
-    """"""
+    """It returns the Poisson matrix without elimination of boundary conditions.
+
+    Parameters
+    ----------
+    n: int
+        The number of elements to discretize each dimension.
+
+    Returns
+    -------
+    _typing.sparray
+        The matrix in sparse format of shape ((n + 1)**3, (n + 1)**3).
+    """
 
     h = 1 / n
     diagonal_identity = sp.identity((n + 1) ** 2) * h**2
@@ -36,7 +47,7 @@ def get_inner_poisson_3D(n: int) -> sparray:
 
     Returns
     -------
-    numpy.ndarray
+    _typing.sparray
         The inner matrix of shape ((n + 1)**2*(n - 1), (n + 1)**2*(n - 1)).
     """
 
@@ -124,7 +135,7 @@ def _inner_no_boundary(n: int) -> sparray:
 
     Returns
     -------
-    numpy.ndarray
+    _typing.sparray
         The 2D Poisson matrix of shape ((n - 1)**3, (n - 1)**3).
     """
 
@@ -144,7 +155,24 @@ def _inner_no_boundary(n: int) -> sparray:
 
 
 def get_f_3D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """"""
+    """It constructs the right-hand size in three dimensions.
+
+    Parameters
+    ----------
+    n: int
+        The number of discretization elements.
+
+    Returns
+    -------
+    numpy.ndarray
+        The right-hand side f of shape (n + 1)**3.
+    numpy.ndarray
+        The x-domain.
+    numpy.ndarray
+        The y-domain.
+    numpy.ndarray
+        The z-domain.
+    """
 
     h = 1 / n
     space_domain = np.zeros((n + 1, n + 1, n + 1))
@@ -174,10 +202,47 @@ def get_f_3D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 
 def f_3D(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> np.ndarray:
+    """The function to evaluate.
+
+    Parameters
+    ----------
+    x: numpy.ndarray
+        The x-domain.
+    y: numpy.ndarray
+        The y-domain.
+    z: numpy.ndarray
+        The z-domain.
+
+    Returns
+    -------
+    numpy.ndarray
+        The evaluation.
+    """
+
     return (x**2 * z**2 + z**2 * y**2 + y**2 * x**2) * np.sin(x * y * z)
 
 
 def get_exact_3D(n: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """It returns the exact solution to the Poisson equation on the grid.
+
+    Parameters
+    ----------
+    n: int
+        The number of discretization elements on each dimension.
+
+
+    Returns
+    -------
+    numpy.ndarray
+        The exact solution of shape (n + 1)**3.
+    numpy.ndarray
+        The x-domain.
+    numpy.ndarray
+        The y-domain.
+    numpy.ndarray
+        The z-domain.
+    """
+
     domain = np.linspace(0, 1, n + 1, endpoint=True)
     xx, yy, zz = np.meshgrid(domain, domain, domain, sparse=True)
     return np.ravel(np.sin(np.multiply(xx, np.multiply(yy, zz))), order="C"), xx, yy, zz

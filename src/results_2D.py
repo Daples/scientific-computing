@@ -96,110 +96,110 @@ for permute in [False, True]:
             Plotter.get_plot(ps_2D.tolist(), val, path, ylabel=labels[i])
 
 # ITERATIVE SOLVERS
-# Ns = [5, 15, 30, 45, 60, 75]
-# omega = 1.5
+Ns = [5, 15, 30, 45, 60, 75]
+omega = 1.5
 
-# # SSOR as BIM
-# d = {}
-# results_per_N_SSOR = []
-# for N in Ns:
-#     # Get objects
-#     A = two_dimensional_poisson(N)
-#     f, xx, yy = get_f_2D(N)
-#     u_exact, _, _ = get_exact_2D(N)
+# SSOR as BIM
+d = {}
+results_per_N_SSOR = []
+for N in Ns:
+    # Get objects
+    A = two_dimensional_poisson(N)
+    f, xx, yy = get_f_2D(N)
+    u_exact, _, _ = get_exact_2D(N)
 
-#     # Solve the system
-#     results = solve_ssor_sparse(A, f, u_exact, omega)
-#     results_per_N_SSOR.append(results)
+    # Solve the system
+    results = solve_ssor_sparse(A, f, u_exact, omega)
+    results_per_N_SSOR.append(results)
 
-# # Question 6
-# fig, ax = plt.subplots(1, 1)
-# for i, N in enumerate(Ns):
-#     results = results_per_N_SSOR[i]
-#     f, xx, yy = get_f_2D(N)
-#     scaled_residuals = np.array(results.residuals) / np.linalg.norm(f)
-#     ax.semilogy(scaled_residuals, label=f"N={N}")
-# plt.xlabel("Iteration")
-# plt.ylabel(r"$\log_{10}\frac{||r_m||_2}{||f^h||_2}$")
+# Question 6
+fig, ax = plt.subplots(1, 1)
+for i, N in enumerate(Ns):
+    results = results_per_N_SSOR[i]
+    f, xx, yy = get_f_2D(N)
+    scaled_residuals = np.array(results.residuals) / np.linalg.norm(f)
+    ax.semilogy(scaled_residuals, label=f"N={N}")
+plt.xlabel("Iteration")
+plt.ylabel(r"$\log_{10}\frac{||r_m||_2}{||f^h||_2}$")
 
-# box = ax.get_position()
-# ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-# ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
-# plt.grid(True, which="both", ls="-")
-# plt.savefig(Plotter.add_folder(f"residuals_SSOR_2D.pdf"), bbox_inches="tight")
+plt.grid(True, which="both", ls="-")
+plt.savefig(Plotter.add_folder(f"residuals_SSOR_2D.pdf"), bbox_inches="tight")
 
-# d["scaled_residuals"] = [r.residuals for r in results_per_N_SSOR]
+d["scaled_residuals"] = [r.residuals for r in results_per_N_SSOR]
 
-# # Question 7
-# last_iters = 5
-# residual_reduction = np.zeros((len(Ns), last_iters))
-# for i, N in enumerate(Ns):
-#     residuals = np.array(results_per_N_SSOR[i].residuals)
-#     residual_reduction[i, :] = np.divide(
-#         residuals[-last_iters:], residuals[-last_iters - 1 : -1]
-#     )
-# np.savetxt("asymptotic_convergence.csv", residual_reduction, delimiter=",")
-# d["asymptotic_convergence"] = residual_reduction.tolist()
+# Question 7
+last_iters = 5
+residual_reduction = np.zeros((len(Ns), last_iters))
+for i, N in enumerate(Ns):
+    residuals = np.array(results_per_N_SSOR[i].residuals)
+    residual_reduction[i, :] = np.divide(
+        residuals[-last_iters:], residuals[-last_iters - 1 : -1]
+    )
+np.savetxt("asymptotic_convergence.csv", residual_reduction, delimiter=",")
+d["asymptotic_convergence"] = residual_reduction.tolist()
 
-# # Question 8
-# cpu_times = [r.time for r in results_per_N_SSOR]
-# Plotter.get_plot(
-#     cast(list[float], Ns),
-#     cpu_times,
-#     "cpu_SSOR_2D.pdf",
-#     xlabel="$N$",
-#     ylabel="CPU Time (s)",
-# )
-# d["cpu_times"] = cpu_times
+# Question 8
+cpu_times = [r.time for r in results_per_N_SSOR]
+Plotter.get_plot(
+    cast(list[float], Ns),
+    cpu_times,
+    "cpu_SSOR_2D.pdf",
+    xlabel="$N$",
+    ylabel="CPU Time (s)",
+)
+d["cpu_times"] = cpu_times
 
-# with open("results_SSOR_2D.json", "w") as outfile:
-#     json.dump(d, outfile)
+with open("results_SSOR_2D.json", "w") as outfile:
+    json.dump(d, outfile)
 
-# # CG with SSOR preconditioner
-# d = {}
-# results_per_N_CG = []
-# for N in Ns:
-#     # Get objects
-#     A = two_dimensional_poisson(N)
-#     f, _, _ = get_f_2D(N)
-#     u_exact, _, _ = get_exact_2D(N)
+# CG with SSOR preconditioner
+d = {}
+results_per_N_CG = []
+for N in Ns:
+    # Get objects
+    A = two_dimensional_poisson(N)
+    f, _, _ = get_f_2D(N)
+    u_exact, _, _ = get_exact_2D(N)
 
-#     # Get preconditioner
-#     M = get_M_SSOR(A, omega)
+    # Get preconditioner
+    M = get_M_SSOR(A, omega)
 
-#     # Solve system
-#     results = solve_cg(A, f, u_exact, M=M)
-#     results_per_N_CG.append(results)
+    # Solve system
+    results = solve_cg(A, f, u_exact, M=M)
+    results_per_N_CG.append(results)
 
-# # Question 9
-# fig, ax = plt.subplots(1, 1)
-# for i, N in enumerate(Ns):
-#     results = results_per_N_CG[i]
-#     f, xx, yy = get_f_2D(N)
-#     scaled_residuals = np.array(results.residuals) / np.linalg.norm(f)
-#     ax.semilogy(scaled_residuals, label=f"N={N}")
-# plt.xlabel("Iteration")
-# plt.ylabel(r"$\log_{10}\frac{||r_m||_2}{||f^h||_2}$")
+# Question 9
+fig, ax = plt.subplots(1, 1)
+for i, N in enumerate(Ns):
+    results = results_per_N_CG[i]
+    f, xx, yy = get_f_2D(N)
+    scaled_residuals = np.array(results.residuals) / np.linalg.norm(f)
+    ax.semilogy(scaled_residuals, label=f"N={N}")
+plt.xlabel("Iteration")
+plt.ylabel(r"$\log_{10}\frac{||r_m||_2}{||f^h||_2}$")
 
-# box = ax.get_position()
-# ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-# ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
-# plt.grid(True, which="both", ls="-")
-# plt.savefig(Plotter.add_folder(f"residuals_CG_2D.pdf"), bbox_inches="tight")
+plt.grid(True, which="both", ls="-")
+plt.savefig(Plotter.add_folder(f"residuals_CG_2D.pdf"), bbox_inches="tight")
 
-# d["scaled_residuals"] = [r.residuals for r in results_per_N_CG]
+d["scaled_residuals"] = [r.residuals for r in results_per_N_CG]
 
-# cpu_times = [r.time for r in results_per_N_CG]
-# Plotter.get_plot(
-#     cast(list[float], Ns),
-#     cpu_times,
-#     "cpu_CG_2D.pdf",
-#     xlabel="$N$",
-#     ylabel="CPU Time (s)",
-# )
-# d["cpu_times"] = cpu_times
+cpu_times = [r.time for r in results_per_N_CG]
+Plotter.get_plot(
+    cast(list[float], Ns),
+    cpu_times,
+    "cpu_CG_2D.pdf",
+    xlabel="$N$",
+    ylabel="CPU Time (s)",
+)
+d["cpu_times"] = cpu_times
 
-# with open("results_CG_2D.json", "w") as outfile:
-#     json.dump(d, outfile)
+with open("results_CG_2D.json", "w") as outfile:
+    json.dump(d, outfile)

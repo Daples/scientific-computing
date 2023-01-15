@@ -5,7 +5,7 @@ import numpy as np
 
 @dataclass
 class IterativeResults:
-    """A class to store the results of an interative method.
+    """A class to store the results of an iterative method.
 
     Attributes
     ----------
